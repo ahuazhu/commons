@@ -104,18 +104,18 @@ public class AbstractHttpClient implements GenericHttp {
             httpGet = new HttpGet(url);
             this.addAuth(httpGet, url);
             HttpResponse e = this.httpClient.execute(httpGet);
-            if(200 != e.getStatusLine().getStatusCode()) {
+            if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
 
             HttpEntity httpEntity = e.getEntity();
             responseBody = EntityUtils.toString(httpEntity, this.defaultCharset);
             EntityUtils.consume(httpEntity);
-            if(StringUtils.isEmpty(responseBody)) {
+            if (StringUtils.isEmpty(responseBody)) {
                 throw new RuntimeException("response is empty");
             }
 
-            if(this.openLogInfo) {
+            if (this.openLogInfo) {
                 logger.info((new StringBuilder(300)).append("doGet url: ").append(url).append(",responseBody: ").append(responseBody).toString());
             }
 
@@ -125,7 +125,7 @@ public class AbstractHttpClient implements GenericHttp {
             throw new RuntimeException("doGet error,url: " + url + ",errorMessage: " + var11.getMessage(), var11);
         } finally {
             monitorTransaction.complete();
-            if(httpGet != null) {
+            if (httpGet != null) {
                 httpGet.abort();
             }
 
@@ -143,18 +143,18 @@ public class AbstractHttpClient implements GenericHttp {
             this.addAuth(httpPost, url);
             this.enrichPostParameter(httpPost, params);
             HttpResponse e = this.httpClient.execute(httpPost);
-            if(200 != e.getStatusLine().getStatusCode()) {
+            if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
 
             HttpEntity httpEntity = e.getEntity();
             responseBody = EntityUtils.toString(httpEntity, this.defaultCharset);
             EntityUtils.consume(httpEntity);
-            if(StringUtils.isEmpty(responseBody)) {
+            if (StringUtils.isEmpty(responseBody)) {
                 throw new RuntimeException("response is empty");
             }
 
-            if(this.openLogInfo) {
+            if (this.openLogInfo) {
                 logger.info((new StringBuilder(500)).append("doPost url: ").append(url).append(",data: ").append(params.toString()).append(",responseBody: ").append(responseBody).toString());
             }
 
@@ -164,7 +164,7 @@ public class AbstractHttpClient implements GenericHttp {
             throw new RuntimeException("doPost error,url: " + url + ",params: " + params + ",errorMessage: " + var11.getMessage(), var11);
         } finally {
             monitorTransaction.complete();
-            if(httpPost != null) {
+            if (httpPost != null) {
                 httpPost.abort();
             }
 
@@ -187,18 +187,18 @@ public class AbstractHttpClient implements GenericHttp {
             this.addAuth(httpPost, url);
             this.enrichPostFileParameter(httpPost, inputStream);
             HttpResponse e = this.httpClient.execute(httpPost);
-            if(200 != e.getStatusLine().getStatusCode()) {
+            if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
 
             HttpEntity httpEntity = e.getEntity();
             responseBody = EntityUtils.toString(httpEntity, this.defaultCharset);
             EntityUtils.consume(httpEntity);
-            if(StringUtils.isEmpty(responseBody)) {
+            if (StringUtils.isEmpty(responseBody)) {
                 throw new RuntimeException("response is empty");
             }
 
-            if(this.openLogInfo) {
+            if (this.openLogInfo) {
                 logger.info((new StringBuilder(500)).append("doPostFile url: ").append(url).append(",responseBody: ").append(responseBody).toString());
             }
 
@@ -208,7 +208,7 @@ public class AbstractHttpClient implements GenericHttp {
             throw new RuntimeException("doPostFile error,url: " + url + ",errorMessage: " + var11.getMessage(), var11);
         } finally {
             monitorTransaction.complete();
-            if(httpPost != null) {
+            if (httpPost != null) {
                 httpPost.abort();
             }
 
@@ -228,10 +228,10 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     private void enrichPostParameter(HttpPost httpPost, Map<String, String> params) throws UnsupportedEncodingException {
-        if(params != null && params.size() != 0) {
-            if(params.size() == 1 && params.get("json") != null) {
+        if (params != null && params.size() != 0) {
+            if (params.size() == 1 && params.get("json") != null) {
                 httpPost.addHeader("Content-Type", "application/json");
-                StringEntity nameValuePairs1 = new StringEntity((String)params.get("json"), this.defaultCharset);
+                StringEntity nameValuePairs1 = new StringEntity((String) params.get("json"), this.defaultCharset);
                 nameValuePairs1.setContentType("text/json");
                 nameValuePairs1.setContentEncoding(new BasicHeader("Content-Type", "application/json"));
                 httpPost.setEntity(nameValuePairs1);
@@ -249,9 +249,9 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     private String enrichGetParameter(String url, Map<String, String> params) throws UnsupportedEncodingException {
-        if(params != null && params.size() != 0) {
+        if (params != null && params.size() != 0) {
             StringBuilder sbUrl = new StringBuilder(url);
-            if(!url.endsWith("?")) {
+            if (!url.endsWith("?")) {
                 sbUrl.append("?");
             }
 

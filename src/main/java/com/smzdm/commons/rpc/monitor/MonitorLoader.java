@@ -19,7 +19,7 @@ public class MonitorLoader {
     }
 
     static {
-        if(monitor == null) {
+        if (monitor == null) {
             monitor = new SimpleMonitor();
         }
 

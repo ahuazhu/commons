@@ -13,6 +13,7 @@ public class DefaultTaskExecutor implements TaskExecutor {
 
     static class ProxyTask implements Runnable {
         private TaskContext taskContext;
+
         ProxyTask(TaskContext taskContext) {
             this.taskContext = taskContext;
         }

@@ -21,16 +21,16 @@ public class HttpAdvice implements IntroductionInterceptor {
     }
 
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        if(!this.implementsInterface(methodInvocation.getMethod().getDeclaringClass())) {
+        if (!this.implementsInterface(methodInvocation.getMethod().getDeclaringClass())) {
             return methodInvocation.proceed();
         } else {
-            GenericHttp realWorker = (GenericHttp)methodInvocation.getThis();
+            GenericHttp realWorker = (GenericHttp) methodInvocation.getThis();
             HttpInvokerMethod invokerMethod = HttpInvokerUtils.createHttpInvokerMethod(methodInvocation.getMethod(), methodInvocation.getArguments());
             HttpResult httpResult = HttpResultUtils.generateHttpResult(realWorker, invokerMethod, methodInvocation.getArguments());
-            if(invokerMethod.getHttpInvokerMethodResult().isReturnHttpResult()) {
+            if (invokerMethod.getHttpInvokerMethodResult().isReturnHttpResult()) {
                 return httpResult;
-            } else if(!httpResult.isSuccess()) {
-                throw new RuntimeException(httpResult.getErrorMessage() instanceof String?httpResult.getErrorMessage().toString(): JSON.toJSONString(httpResult.getErrorMessage()));
+            } else if (!httpResult.isSuccess()) {
+                throw new RuntimeException(httpResult.getErrorMessage() instanceof String ? httpResult.getErrorMessage().toString() : JSON.toJSONString(httpResult.getErrorMessage()));
             } else {
                 return httpResult.getData();
             }

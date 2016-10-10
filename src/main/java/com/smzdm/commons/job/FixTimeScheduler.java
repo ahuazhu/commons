@@ -19,7 +19,7 @@ public class FixTimeScheduler {
 
     private TaskStore taskStore;
     private TaskParser taskParser;
-    private volatile boolean shutdown =false;
+    private volatile boolean shutdown = false;
 
 
     public FixTimeScheduler() {
@@ -30,7 +30,7 @@ public class FixTimeScheduler {
     public void start() {
         new Thread(new Runnable() {
             public void run() {
-                while (!shutdown){
+                while (!shutdown) {
                     if (System.currentTimeMillis() > nextScheduleTimestamp) {
                         List<Task> tasks = taskStore.load();
                         for (Task task : tasks) {

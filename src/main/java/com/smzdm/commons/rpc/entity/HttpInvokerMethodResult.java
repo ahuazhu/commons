@@ -3,6 +3,7 @@ package com.smzdm.commons.rpc.entity;
 /**
  * Created by zhengwenzhu on 16/10/10.
  */
+
 import java.lang.reflect.Type;
 
 public class HttpInvokerMethodResult {

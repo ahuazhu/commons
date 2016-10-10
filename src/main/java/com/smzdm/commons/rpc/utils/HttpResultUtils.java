@@ -35,16 +35,16 @@ public final class HttpResultUtils {
 
         do {
             try {
-                if(invokerMethod.getMethod() == HttpMethod.GET) {
+                if (invokerMethod.getMethod() == HttpMethod.GET) {
                     responseBody = realWorker.doGet(invokerMethod.getUrl(), invokerMethod.getParams());
-                } else if(invokerMethod.getMethod() == HttpMethod.POST) {
+                } else if (invokerMethod.getMethod() == HttpMethod.POST) {
                     responseBody = realWorker.doPost(invokerMethod.getUrl(), invokerMethod.getParams());
                 } else {
-                    if(invokerMethod.getMethod() != HttpMethod.POST_FILE) {
+                    if (invokerMethod.getMethod() != HttpMethod.POST_FILE) {
                         throw new UnsupportedOperationException("Unsupported HttpMethod: " + invokerMethod.getMethod().name());
                     }
 
-                    responseBody = realWorker.doPostFile(invokerMethod.getUrl(), (InputStream)args[0]);
+                    responseBody = realWorker.doPostFile(invokerMethod.getUrl(), (InputStream) args[0]);
                 }
             } catch (Exception var9) {
                 logger.error("generateHttpResult error, retryTimes:" + retryTimes + ", " + var9.getMessage(), var9);
@@ -54,32 +54,32 @@ public final class HttpResultUtils {
             }
 
             try {
-                if(StringUtils.isEmpty(invokerMethod.getResultMapKey())) {
+                if (StringUtils.isEmpty(invokerMethod.getResultMapKey())) {
                     return realWorker.processResponse(responseBody, invokerMethod.getHttpInvokerMethodResult().getReturnType());
                 }
 
                 HttpResult e = realWorker.processResponse(responseBody, resultMapKeyType);
-                if(!e.isSuccess()) {
+                if (!e.isSuccess()) {
                     return e;
                 }
 
-                if(e.getData() != null) {
-                    String resultMapValue = (String)((Map)e.getData()).get(invokerMethod.getResultMapKey());
+                if (e.getData() != null) {
+                    String resultMapValue = (String) ((Map) e.getData()).get(invokerMethod.getResultMapKey());
                     return HttpResult.success(parseResultMapValue(resultMapValue, invokerMethod.getHttpInvokerMethodResult().getReturnType()));
                 }
 
-                return HttpResult.success((Object)null);
+                return HttpResult.success((Object) null);
             } catch (Exception var8) {
                 errorMessage = "parse json error, responseBody: " + responseBody + ",errorMessage: " + var8.getMessage() + ",url: " + invokerMethod.getUrl() + ",params: " + invokerMethod.getParams();
                 logger.error("generateHttpResult error, retryTimes:" + retryTimes + ", " + errorMessage, var8);
                 --retryTimes;
             }
-        } while(retryTimes >= 0);
+        } while (retryTimes >= 0);
 
         return HttpResult.fail(errorMessage);
     }
 
     private static Object parseResultMapValue(String resultMapValue, Type returnType) {
-        return StringUtils.isEmpty(resultMapValue)?null:(String.class == returnType?resultMapValue:(returnType == Integer.class?Integer.valueOf(Integer.parseInt(resultMapValue)):(returnType == Boolean.class?Boolean.valueOf(Boolean.parseBoolean(resultMapValue)):(returnType == Long.class?Long.valueOf(Long.parseLong(resultMapValue)):(returnType == Float.class?Float.valueOf(Float.parseFloat(resultMapValue)):(returnType == Double.class?Double.valueOf(Double.parseDouble(resultMapValue)):(returnType == Byte.class?Byte.valueOf(Byte.parseByte(resultMapValue)):(returnType == Short.class?Short.valueOf(Short.parseShort(resultMapValue)):(returnType == Character.class?Character.valueOf(resultMapValue.charAt(0)):JSON.parseObject(resultMapValue, returnType, new Feature[0]))))))))));
+        return StringUtils.isEmpty(resultMapValue) ? null : (String.class == returnType ? resultMapValue : (returnType == Integer.class ? Integer.valueOf(Integer.parseInt(resultMapValue)) : (returnType == Boolean.class ? Boolean.valueOf(Boolean.parseBoolean(resultMapValue)) : (returnType == Long.class ? Long.valueOf(Long.parseLong(resultMapValue)) : (returnType == Float.class ? Float.valueOf(Float.parseFloat(resultMapValue)) : (returnType == Double.class ? Double.valueOf(Double.parseDouble(resultMapValue)) : (returnType == Byte.class ? Byte.valueOf(Byte.parseByte(resultMapValue)) : (returnType == Short.class ? Short.valueOf(Short.parseShort(resultMapValue)) : (returnType == Character.class ? Character.valueOf(resultMapValue.charAt(0)) : JSON.parseObject(resultMapValue, returnType, new Feature[0]))))))))));
     }
 }
