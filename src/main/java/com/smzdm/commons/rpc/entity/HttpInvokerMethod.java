@@ -16,7 +16,7 @@ public class HttpInvokerMethod {
     private Map<String, String> params;
     private HttpInvokerMethodResult httpInvokerMethodResult;
 
-    public HttpInvokerMethod(String url, HttpMethod method, int retryTimes, String resultMapKey, Map<String, String> params, HttpInvokerMethodResult httpInvokerMethodResult) {
+    public  HttpInvokerMethod(String url, HttpMethod method, int retryTimes, String resultMapKey, Map<String, String> params, HttpInvokerMethodResult httpInvokerMethodResult) {
         this.url = url;
         this.method = method;
         this.retryTimes = retryTimes;

@@ -120,9 +120,9 @@ public class AbstractHttpClient implements GenericHttp {
             }
 
             monitorTransaction.success();
-        } catch (Exception var11) {
-            monitorTransaction.failure(var11);
-            throw new RuntimeException("doGet error,url: " + url + ",errorMessage: " + var11.getMessage(), var11);
+        } catch (Exception e) {
+            monitorTransaction.failure(e);
+            throw new RuntimeException("doGet error,url: " + url + ",errorMessage: " + e.getMessage(), e);
         } finally {
             monitorTransaction.complete();
             if (httpGet != null) {
@@ -159,9 +159,9 @@ public class AbstractHttpClient implements GenericHttp {
             }
 
             monitorTransaction.success();
-        } catch (Exception var11) {
-            monitorTransaction.failure(var11);
-            throw new RuntimeException("doPost error,url: " + url + ",params: " + params + ",errorMessage: " + var11.getMessage(), var11);
+        } catch (Exception e) {
+            monitorTransaction.failure(e);
+            throw new RuntimeException("doPost error,url: " + url + ",params: " + params + ",errorMessage: " + e.getMessage(), e);
         } finally {
             monitorTransaction.complete();
             if (httpPost != null) {
@@ -203,9 +203,9 @@ public class AbstractHttpClient implements GenericHttp {
             }
 
             monitorTransaction.success();
-        } catch (Exception var11) {
-            monitorTransaction.failure(var11);
-            throw new RuntimeException("doPostFile error,url: " + url + ",errorMessage: " + var11.getMessage(), var11);
+        } catch (Exception e) {
+            monitorTransaction.failure(e);
+            throw new RuntimeException("doPostFile error,url: " + url + ",errorMessage: " + e.getMessage(), e);
         } finally {
             monitorTransaction.complete();
             if (httpPost != null) {

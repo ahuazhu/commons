@@ -25,8 +25,11 @@ public class HttpInvocationHandler implements InvocationHandler {
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (args == null) {
+            args = new Object[0];
+        }
         HttpInvokerMethod invokerMethod = HttpInvokerUtils.createHttpInvokerMethod(method, args);
-        HttpResult httpResult = HttpResultUtils.generateHttpResult(this.realWorker, invokerMethod, args);
+        HttpResult httpResult = HttpResultUtils.httpCall(this.realWorker, invokerMethod, args);
         if (invokerMethod.getHttpInvokerMethodResult().isReturnHttpResult()) {
             return httpResult;
         } else if (!httpResult.isSuccess()) {

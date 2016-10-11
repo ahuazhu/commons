@@ -26,7 +26,7 @@ public class HttpAdvice implements IntroductionInterceptor {
         } else {
             GenericHttp realWorker = (GenericHttp) methodInvocation.getThis();
             HttpInvokerMethod invokerMethod = HttpInvokerUtils.createHttpInvokerMethod(methodInvocation.getMethod(), methodInvocation.getArguments());
-            HttpResult httpResult = HttpResultUtils.generateHttpResult(realWorker, invokerMethod, methodInvocation.getArguments());
+            HttpResult httpResult = HttpResultUtils.httpCall(realWorker, invokerMethod, methodInvocation.getArguments());
             if (invokerMethod.getHttpInvokerMethodResult().isReturnHttpResult()) {
                 return httpResult;
             } else if (!httpResult.isSuccess()) {

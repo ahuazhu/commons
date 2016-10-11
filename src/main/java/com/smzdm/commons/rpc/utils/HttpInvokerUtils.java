@@ -7,6 +7,7 @@ import com.smzdm.commons.rpc.entity.HttpInvokerMethod;
 import com.smzdm.commons.rpc.entity.HttpInvokerMethodResult;
 import com.smzdm.commons.rpc.entity.HttpResult;
 import com.smzdm.commons.rpc.enums.HttpMethod;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -15,7 +16,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -31,62 +31,73 @@ public final class HttpInvokerUtils {
     }
 
     public static HttpInvokerMethod createHttpInvokerMethod(Method method, Object[] arguments) {
-        if (method != null && arguments != null) {
-            HttpAction httpAction = (HttpAction) method.getAnnotation(HttpAction.class);
-            if (httpAction == null) {
-                throw new IllegalArgumentException("The method " + method.getName() + " must be annotated by " + HttpAction.class.getName());
-            } else {
-                Map<String, String> paramValues = new HashMap<String, String>();
-                if (httpAction.method() != HttpMethod.POST_FILE) {
-                    Class[] paramTypes = method.getParameterTypes();
-                    Annotation[][] paramAnnotations = getParameterAnnotations(method);
 
-                    for (int i = 0; i < paramTypes.length; ++i) {
-                        HttpParam httpParam = null;
-                        Annotation[] paramAnnotation = paramAnnotations[i];
-                        for (Annotation annotation : paramAnnotation) {
-                            if (annotation instanceof HttpParam) {
-                                httpParam = (HttpParam) annotation;
-                                break;
-                            }
-                        }
-
-                        if (httpParam == null || "json".equalsIgnoreCase(httpParam.value())) {
-                            if (paramTypes.length != 1) {
-                                throw new RuntimeException("httpParam json type must be only one parameter");
-                            }
-
-                            paramValues.put("json", JSON.toJSONString(arguments[i]));
-                            break;
-                        }
-
-                        if (arguments[i] instanceof String) {
-                            paramValues.put(httpParam.value(), arguments[i].toString());
-                        } else if (arguments[i] instanceof Number) {
-                            paramValues.put(httpParam.value(), String.valueOf(arguments[i]));
-                        } else if (arguments[i] instanceof Collection) {
-                            paramValues.put(httpParam.value(), StringUtils.join((Collection) arguments[i], ','));
-                        } else {
-                            if (!(arguments[i] instanceof Map)) {
-                                throw new RuntimeException("httpParam is not Collection or Map or String or Number");
-                            }
-
-                            Map var13 = (Map) arguments[i];
-                            Iterator var14 = var13.keySet().iterator();
-
-                            while (var14.hasNext()) {
-                                Object var15 = var14.next();
-                                paramValues.put(String.valueOf(var15), String.valueOf(var13.get(var15)));
-                            }
-                        }
-                    }
-                }
-
-                return new HttpInvokerMethod(httpAction.url(), httpAction.method(), httpAction.retryTimes(), httpAction.resultMapKey(), paramValues, getHttpInvokerMethodResult(method));
-            }
-        } else {
+        if (method == null || arguments == null) {
             throw new IllegalArgumentException("method and arguments must be no null");
         }
+
+        HttpAction httpAction = method.getAnnotation(HttpAction.class);
+        if (httpAction == null) {
+            throw new IllegalArgumentException("The method " + method.getName() + " must be annotated by " + HttpAction.class.getName());
+        }
+
+
+        if (httpAction.method() == HttpMethod.POST_FILE) {
+            throw new NotImplementedException("Only GET/POST Support Yet");
+        }
+
+        Map<String, String> paramValues = parseParams(method, arguments);
+
+        return new HttpInvokerMethod(httpAction.url(), httpAction.method(), httpAction.retryTimes(), httpAction.resultMapKey(), paramValues, getHttpInvokerMethodResult(method));
+
+    }
+
+    private static Map<String, String> parseParams(Method method, Object[] arguments) {
+        Map<String, String> paramValues = new HashMap<String, String>();
+
+        Class[] paramTypes = method.getParameterTypes();
+        Annotation[][] paramAnnotations = getParameterAnnotations(method);
+
+        for (int i = 0; i < paramTypes.length; ++i) {
+            Object argument = arguments[i];
+            HttpParam httpParam = findHttpParam(paramAnnotations[i]);
+
+            if (httpParam == null || "json".equalsIgnoreCase(httpParam.value())) {
+                if (paramTypes.length != 1) {
+                    throw new RuntimeException("httpParam json type must be only one parameter");
+                }
+                paramValues.put("json", JSON.toJSONString(argument));
+                break;
+            }
+
+            if (argument instanceof String) {
+                paramValues.put(httpParam.value(), argument.toString());
+            } else if (argument instanceof Number) {
+                paramValues.put(httpParam.value(), String.valueOf(argument));
+            } else if (argument instanceof Collection) {
+                paramValues.put(httpParam.value(), StringUtils.join((Collection) argument, ','));
+            } else if (argument instanceof Map) {
+                Map argMap = (Map) argument;
+                for (Object key : argMap.keySet()) {
+                    paramValues.put(String.valueOf(key), String.valueOf(argMap.get(key)));
+                }
+            } else {
+                throw new RuntimeException("httpParam is not Collection or Map or String or Number");
+            }
+        }
+        return paramValues;
+    }
+
+    private static HttpParam findHttpParam(Annotation[] paramAnnotation1) {
+        HttpParam httpParam = null;
+        Annotation[] paramAnnotation = paramAnnotation1;
+        for (Annotation annotation : paramAnnotation) {
+            if (annotation instanceof HttpParam) {
+                httpParam = (HttpParam) annotation;
+                break;
+            }
+        }
+        return httpParam;
     }
 
     private static HttpInvokerMethodResult generateHttpInvokerMethodResult(Method method) {

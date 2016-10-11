@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="chargeService" class="com.smzdm.commons.rpc.HttpProxyFactoryBean" init-method="init">
+        <property name="proxyInterfaces" value="com.smzdm.commons.rpc.ChargeService" />
+        <property name="serviceName" value="https://pay.smzdm.com/upay" />
+    </bean>
+</beans>
