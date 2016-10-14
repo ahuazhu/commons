@@ -7,4 +7,10 @@
         <property name="proxyInterfaces" value="com.smzdm.commons.rpc.ChargeService" />
         <property name="serviceName" value="https://pay.smzdm.com/upay" />
     </bean>
+
+    <bean id="merchantOrderService" class="com.smzdm.commons.rpc.HttpProxyFactoryBean" init-method="init">
+        <property name="proxyInterfaces" value="com.smzdm.merchant.inter.MerchantOrderService" />
+        <property name="serviceName" value="http://shangjiaapi.smzdm.com:809/v1" />
+    </bean>
+
 </beans>

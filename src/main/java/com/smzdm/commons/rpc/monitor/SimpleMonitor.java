@@ -17,6 +17,6 @@ public class SimpleMonitor implements Monitor {
     }
 
     public MonitorTransaction newTransaction(String type, String name) {
-        return new SimpleMonitorTransaction();
+        return new SimpleMonitorTransaction(type, name);
     }
 }

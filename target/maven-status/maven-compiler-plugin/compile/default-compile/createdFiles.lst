@@ -19,11 +19,13 @@ com/smzdm/commons/rpc/HttpProxyFactoryBean.class
 com/smzdm/commons/job/TaskStore.class
 com/smzdm/commons/rpc/utils/HttpInvokerUtils.class
 com/smzdm/commons/rpc/annotation/HttpAction.class
+com/smzdm/commons/rpc/utils/UrlUtils.class
 com/smzdm/commons/thread/Threads.class
 com/smzdm/commons/job/DefaultTask.class
 com/smzdm/commons/job/TaskContext.class
 com/smzdm/commons/rpc/enums/HttpMethod.class
 com/smzdm/commons/job/DefaultTask$Schemer.class
+com/smzdm/commons/rpc/entity/Context.class
 com/smzdm/commons/rpc/GenericHttp.class
 com/smzdm/commons/job/Task.class
 com/smzdm/commons/thread/Threads$RunnableThread.class

@@ -1,5 +1,7 @@
 package com.smzdm.commons.rpc.utils;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.smzdm.commons.rpc.GenericHttp;
 import com.smzdm.commons.rpc.entity.HttpInvokerMethod;
 import com.smzdm.commons.rpc.entity.HttpResult;
@@ -73,6 +75,7 @@ public class HttpResultUtils {
                 errorMessage = "parse json error, responseBody: " + responseBody + ",errorMessage: " + e.getMessage() + ",url: " + invokerMethod.getUrl() + ",params: " + invokerMethod.getParams();
                 logger.error("httpCall error, retryTimes:" + retryTimes + ", " + errorMessage, e);
             }
+
         } while (--retryTimes >= 0);
 
         return HttpResult.fail(errorMessage);

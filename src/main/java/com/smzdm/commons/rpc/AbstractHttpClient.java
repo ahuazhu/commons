@@ -1,10 +1,14 @@
 package com.smzdm.commons.rpc;
 
 import com.alibaba.fastjson.JSON;
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
+import com.smzdm.commons.rpc.entity.Context;
 import com.smzdm.commons.rpc.entity.HttpResult;
 import com.smzdm.commons.rpc.monitor.Monitor;
 import com.smzdm.commons.rpc.monitor.MonitorLoader;
 import com.smzdm.commons.rpc.monitor.MonitorTransaction;
+import com.smzdm.commons.rpc.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
@@ -33,7 +37,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zhengwenzhu on 16/10/10.
@@ -93,7 +100,10 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     public String doGet(String url, Map<String, String> params) {
-        MonitorTransaction monitorTransaction = monitor.newTransaction("ApplicationTransaction", "doGet." + url);
+
+        String method = url;
+        Transaction t = Cat.newTransaction("Call", method);
+
         HttpGet httpGet = null;
         String responseBody = null;
 
@@ -102,6 +112,7 @@ public class AbstractHttpClient implements GenericHttp {
         try {
             url = enrichGetParameter(url, params);
             httpGet = new HttpGet(url);
+            logCatCross(httpGet, method);
             this.addAuth(httpGet, url);
             HttpResponse e = this.httpClient.execute(httpGet);
             if (200 != e.getStatusLine().getStatusCode()) {
@@ -119,12 +130,12 @@ public class AbstractHttpClient implements GenericHttp {
                 logger.info((new StringBuilder(300)).append("doGet url: ").append(url).append(",responseBody: ").append(responseBody).toString());
             }
 
-            monitorTransaction.success();
+            t.setStatus(Transaction.SUCCESS);
         } catch (Exception e) {
-            monitorTransaction.failure(e);
+            t.setStatus(e);
             throw new RuntimeException("doGet error,url: " + url + ",errorMessage: " + e.getMessage(), e);
         } finally {
-            monitorTransaction.complete();
+            t.complete();
             if (httpGet != null) {
                 httpGet.abort();
             }
@@ -134,12 +145,32 @@ public class AbstractHttpClient implements GenericHttp {
         return responseBody;
     }
 
+    private void logCatCross(HttpRequestBase request, String method) {
+
+        String hostName = UrlUtils.parseHost(serviceName);
+
+        Cat.logEvent("Call.server", hostName);
+        Cat.logEvent("Call.ip", hostName);
+        Cat.logEvent("PigeonCall.app", serviceName);
+        Cat.logEvent("Call.port", String.valueOf(UrlUtils.parsePort(serviceName)));
+
+        Context context = new Context();
+        Cat.logRemoteCallClient(context);
+        context.addProperty("_catCallerDomain", Cat.getManager().getDomain());
+        context.addProperty("_catCallerMethod", method);
+        for (Map.Entry<String, String> entry : context.getMap().entrySet()) {
+            request.addHeader(entry.getKey(), entry.getValue());
+        }
+    }
+
     public String doPost(String url, Map<String, String> params) {
-        MonitorTransaction monitorTransaction = monitor.newTransaction("ApplicationTransaction", "doPost." + url);
+        String method = url;
+        Transaction t = Cat.newTransaction("Call", method);;
         HttpPost httpPost = null;
         String responseBody = null;
         try {
             httpPost = new HttpPost(url);
+            logCatCross(httpPost, method);
             this.addAuth(httpPost, url);
             this.enrichPostParameter(httpPost, params);
             HttpResponse e = this.httpClient.execute(httpPost);
@@ -158,12 +189,12 @@ public class AbstractHttpClient implements GenericHttp {
                 logger.info((new StringBuilder(500)).append("doPost url: ").append(url).append(",data: ").append(params.toString()).append(",responseBody: ").append(responseBody).toString());
             }
 
-            monitorTransaction.success();
+            t.setStatus(Transaction.SUCCESS);
         } catch (Exception e) {
-            monitorTransaction.failure(e);
+            t.setStatus(e);
             throw new RuntimeException("doPost error,url: " + url + ",params: " + params + ",errorMessage: " + e.getMessage(), e);
         } finally {
-            monitorTransaction.complete();
+            t.complete();
             if (httpPost != null) {
                 httpPost.abort();
             }
@@ -178,12 +209,14 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     public String doPostFile(String url, InputStream inputStream) {
-        MonitorTransaction monitorTransaction = monitor.newTransaction("ApplicationTransaction", "doPostFile." + url);
+        String method = url;
+        Transaction t = Cat.newTransaction("Call", method);;
         HttpPost httpPost = null;
         String responseBody = null;
 
         try {
             httpPost = new HttpPost(url);
+            logCatCross(httpPost, method);
             this.addAuth(httpPost, url);
             this.enrichPostFileParameter(httpPost, inputStream);
             HttpResponse e = this.httpClient.execute(httpPost);
@@ -202,12 +235,12 @@ public class AbstractHttpClient implements GenericHttp {
                 logger.info((new StringBuilder(500)).append("doPostFile url: ").append(url).append(",responseBody: ").append(responseBody).toString());
             }
 
-            monitorTransaction.success();
+            t.setStatus(Transaction.SUCCESS);
         } catch (Exception e) {
-            monitorTransaction.failure(e);
+            t.setStatus(e);
             throw new RuntimeException("doPostFile error,url: " + url + ",errorMessage: " + e.getMessage(), e);
         } finally {
-            monitorTransaction.complete();
+            t.complete();
             if (httpPost != null) {
                 httpPost.abort();
             }

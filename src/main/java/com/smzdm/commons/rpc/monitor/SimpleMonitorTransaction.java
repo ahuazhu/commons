@@ -6,6 +6,10 @@ package com.smzdm.commons.rpc.monitor;
 
 public class SimpleMonitorTransaction implements MonitorTransaction {
     public SimpleMonitorTransaction() {
+
+    }
+
+    public SimpleMonitorTransaction(String type, String name) {
     }
 
     public void success() {
