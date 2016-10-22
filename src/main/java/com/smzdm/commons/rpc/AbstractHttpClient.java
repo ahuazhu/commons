@@ -280,8 +280,8 @@ public class AbstractHttpClient implements GenericHttp {
             if (params.size() == 1 && params.get("json") != null) {
                 httpPost.addHeader("Content-Type", "application/json");
                 StringEntity nameValuePairs1 = new StringEntity(params.get("json"), this.defaultCharset);
-                nameValuePairs1.setContentType("text/json");
-                nameValuePairs1.setContentEncoding(new BasicHeader("Content-Type", "application/json"));
+//                nameValuePairs1.setContentType("text/json");
+//                nameValuePairs1.setContentEncoding(new BasicHeader("Content-Type", "application/json"));
                 httpPost.setEntity(nameValuePairs1);
             } else {
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
