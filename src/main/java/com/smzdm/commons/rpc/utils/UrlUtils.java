@@ -23,4 +23,12 @@ public class UrlUtils {
             return -1;
         }
     }
+
+    public static String parsePath(String url) {
+        try {
+            return new URL(url).getPath();
+        } catch (IOException e) {
+            return "";
+        }
+    }
 }

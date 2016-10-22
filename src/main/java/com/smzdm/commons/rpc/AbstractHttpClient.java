@@ -7,7 +7,6 @@ import com.smzdm.commons.rpc.entity.Context;
 import com.smzdm.commons.rpc.entity.HttpResult;
 import com.smzdm.commons.rpc.monitor.Monitor;
 import com.smzdm.commons.rpc.monitor.MonitorLoader;
-import com.smzdm.commons.rpc.monitor.MonitorTransaction;
 import com.smzdm.commons.rpc.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
@@ -101,13 +100,12 @@ public class AbstractHttpClient implements GenericHttp {
 
     public String doGet(String url, Map<String, String> params) {
 
-        String method = url;
-        Transaction t = Cat.newTransaction("Call", method);
+        url = serviceName + url;
+        String method = UrlUtils.parsePath(url);
 
+        Transaction t = Cat.newTransaction("Call", method);
         HttpGet httpGet = null;
         String responseBody = null;
-
-        url = serviceName + url;
 
         try {
             url = enrichGetParameter(url, params);
@@ -115,6 +113,8 @@ public class AbstractHttpClient implements GenericHttp {
             logCatCross(httpGet, method);
             this.addAuth(httpGet, url);
             HttpResponse e = this.httpClient.execute(httpGet);
+            logCall(url, e);
+
             if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
@@ -147,13 +147,6 @@ public class AbstractHttpClient implements GenericHttp {
 
     private void logCatCross(HttpRequestBase request, String method) {
 
-        String hostName = UrlUtils.parseHost(serviceName);
-
-        Cat.logEvent("Call.server", hostName);
-        Cat.logEvent("Call.ip", hostName);
-        Cat.logEvent("PigeonCall.app", serviceName);
-        Cat.logEvent("Call.port", String.valueOf(UrlUtils.parsePort(serviceName)));
-
         Context context = new Context();
         Cat.logRemoteCallClient(context);
         context.addProperty("_catCallerDomain", Cat.getManager().getDomain());
@@ -164,8 +157,10 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     public String doPost(String url, Map<String, String> params) {
-        String method = url;
-        Transaction t = Cat.newTransaction("Call", method);;
+        url = serviceName + url;
+        String method = UrlUtils.parsePath(url);
+
+        Transaction t = Cat.newTransaction("Call", method);
         HttpPost httpPost = null;
         String responseBody = null;
         try {
@@ -174,6 +169,9 @@ public class AbstractHttpClient implements GenericHttp {
             this.addAuth(httpPost, url);
             this.enrichPostParameter(httpPost, params);
             HttpResponse e = this.httpClient.execute(httpPost);
+
+            logCall(url, e);
+
             if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
@@ -204,13 +202,28 @@ public class AbstractHttpClient implements GenericHttp {
         return responseBody;
     }
 
+    private void logCall(String url, HttpResponse e) {
+        String domain = e.getFirstHeader("_catServerDomain") == null ? null : e.getFirstHeader("_catServerDomain").getValue();
+        String server = e.getFirstHeader("_catServer") == null ? null : e.getFirstHeader("_catServer").getValue();
+        if (domain == null) domain = serviceName;
+        if (server == null) server = UrlUtils.parseHost(url);
+
+        Cat.logEvent("Call.server", server);
+//        Cat.logEvent("Call.ip", server);
+        Cat.logEvent("PigeonCall.app", domain);
+//        Cat.logEvent("Call.port", String.valueOf(UrlUtils.parsePort(serviceName)));
+    }
+
     private void addAuth(HttpRequestBase request, String url) {
         //
     }
 
     public String doPostFile(String url, InputStream inputStream) {
-        String method = url;
-        Transaction t = Cat.newTransaction("Call", method);;
+        url = serviceName + url;
+        String method = UrlUtils.parsePath(url);
+
+        Transaction t = Cat.newTransaction("Call", method);
+
         HttpPost httpPost = null;
         String responseBody = null;
 
@@ -220,6 +233,8 @@ public class AbstractHttpClient implements GenericHttp {
             this.addAuth(httpPost, url);
             this.enrichPostFileParameter(httpPost, inputStream);
             HttpResponse e = this.httpClient.execute(httpPost);
+            logCall(url, e);
+
             if (200 != e.getStatusLine().getStatusCode()) {
                 throw new RuntimeException("response code not 200, response code: " + e.getStatusLine().getStatusCode());
             }
@@ -289,7 +304,12 @@ public class AbstractHttpClient implements GenericHttp {
             }
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                sbUrl.append(URLEncoder.encode(entry.getKey(), this.defaultCharset)).append('=').append(URLEncoder.encode((String) entry.getValue(), this.defaultCharset)).append('&');
+
+                if (url.contains("{" + entry.getKey() + "}")) {
+                    url = url.replace("{" + entry.getKey() + "}", entry.getKey());
+                } else {
+                    sbUrl.append(URLEncoder.encode(entry.getKey(), this.defaultCharset)).append('=').append(URLEncoder.encode((String) entry.getValue(), this.defaultCharset)).append('&');
+                }
             }
 
 
