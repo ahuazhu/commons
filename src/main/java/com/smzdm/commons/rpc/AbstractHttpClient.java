@@ -279,7 +279,7 @@ public class AbstractHttpClient implements GenericHttp {
         if (params != null && params.size() != 0) {
             if (params.size() == 1 && params.get("json") != null) {
                 httpPost.addHeader("Content-Type", "application/json");
-                StringEntity nameValuePairs1 = new StringEntity((String) params.get("json"), this.defaultCharset);
+                StringEntity nameValuePairs1 = new StringEntity(params.get("json"), this.defaultCharset);
                 nameValuePairs1.setContentType("text/json");
                 nameValuePairs1.setContentEncoding(new BasicHeader("Content-Type", "application/json"));
                 httpPost.setEntity(nameValuePairs1);
@@ -306,7 +306,7 @@ public class AbstractHttpClient implements GenericHttp {
             for (Map.Entry<String, String> entry : params.entrySet()) {
 
                 if (url.contains("{" + entry.getKey() + "}")) {
-                    url = url.replace("{" + entry.getKey() + "}", entry.getKey());
+                    url = url.replace("{" + entry.getKey() + "}", entry.getValue());
                 } else {
                     sbUrl.append(URLEncoder.encode(entry.getKey(), this.defaultCharset)).append('=').append(URLEncoder.encode((String) entry.getValue(), this.defaultCharset)).append('&');
                 }
