@@ -7,13 +7,13 @@ import java.util.List;
  */
 public class FixTimeScheduler {
     public static final int ONE_SECOND = 1000;
-    public static final int MILLIS_OF_ONE_MIN = 60 * 1000;
+    public static final int MILLIS_OF_ONE_SECOND = 1000;
 
     private String jobName = "FixedTimeScheduler";
 
     private TaskExecutor taskExecutor = new DefaultTaskExecutor();
 
-    private int intervalInMinutes;
+    private long intervalInSecond;
 
     private long nextScheduleTimestamp;
 
@@ -32,6 +32,7 @@ public class FixTimeScheduler {
             public void run() {
                 while (!shutdown) {
                     if (System.currentTimeMillis() > nextScheduleTimestamp) {
+                        nextScheduleTimestamp = nextTime();
                         List<Task> tasks = taskStore.load();
                         for (Task task : tasks) {
                             taskExecutor.execute(new TaskContext(task, taskStore, taskParser));
@@ -43,6 +44,7 @@ public class FixTimeScheduler {
                             //ignore
                         }
                     }
+
                 }
             }
         }).start();
@@ -52,17 +54,17 @@ public class FixTimeScheduler {
         shutdown = true;
     }
 
-    private long nextTIme() {
-        return nextScheduleTimestamp + intervalInMinutes * MILLIS_OF_ONE_MIN;
+    private long nextTime() {
+        return nextScheduleTimestamp + intervalInSecond * MILLIS_OF_ONE_SECOND;
     }
 
 
-    public int getIntervalInMinutes() {
-        return intervalInMinutes;
+    public long getIntervalInSecond() {
+        return intervalInSecond;
     }
 
-    public void setIntervalInMinutes(int intervalInMinutes) {
-        this.intervalInMinutes = intervalInMinutes;
+    public void setIntervalInSecond(long intervalInSecond) {
+        this.intervalInSecond = intervalInSecond;
     }
 
     public String getJobName() {

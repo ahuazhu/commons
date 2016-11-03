@@ -26,7 +26,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -36,10 +35,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zhengwenzhu on 16/10/10.
@@ -102,12 +98,12 @@ public class AbstractHttpClient implements GenericHttp {
 
         url = serviceName + url;
         String method = UrlUtils.parsePath(url);
-
         Transaction t = Cat.newTransaction("Call", method);
         HttpGet httpGet = null;
         String responseBody = null;
 
         try {
+            url = replaceUrlPlaceHolder(url, params);
             url = enrichGetParameter(url, params);
             httpGet = new HttpGet(url);
             logCatCross(httpGet, method);
@@ -159,11 +155,11 @@ public class AbstractHttpClient implements GenericHttp {
     public String doPost(String url, Map<String, String> params) {
         url = serviceName + url;
         String method = UrlUtils.parsePath(url);
-
         Transaction t = Cat.newTransaction("Call", method);
         HttpPost httpPost = null;
         String responseBody = null;
         try {
+            url = replaceUrlPlaceHolder(url, params);
             httpPost = new HttpPost(url);
             logCatCross(httpPost, method);
             this.addAuth(httpPost, url);
@@ -200,6 +196,24 @@ public class AbstractHttpClient implements GenericHttp {
         }
 
         return responseBody;
+    }
+
+    private String replaceUrlPlaceHolder(String url, Map<String, String> params) {
+
+        Set<String> keys = new HashSet<String>();
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (url.contains("{" + entry.getKey() + "}")) {
+                url = url.replace("{" + entry.getKey() + "}", entry.getValue());
+                keys.add(entry.getKey());
+            }
+        }
+
+        for (String key : keys) {
+            params.remove(key);
+        }
+
+        return url;
     }
 
     private void logCall(String url, HttpResponse e) {
@@ -266,6 +280,9 @@ public class AbstractHttpClient implements GenericHttp {
     }
 
     public <T> HttpResult<T> processResponse(String responseBody, Type type) {
+        if (type == String.class) {
+            return HttpResult.success((T) responseBody);
+        }
         return HttpResult.success(JSON.<T>parseObject(responseBody, type));
     }
 
@@ -302,16 +319,9 @@ public class AbstractHttpClient implements GenericHttp {
             if (!url.endsWith("?")) {
                 sbUrl.append("?");
             }
-
             for (Map.Entry<String, String> entry : params.entrySet()) {
-
-                if (url.contains("{" + entry.getKey() + "}")) {
-                    url = url.replace("{" + entry.getKey() + "}", entry.getValue());
-                } else {
-                    sbUrl.append(URLEncoder.encode(entry.getKey(), this.defaultCharset)).append('=').append(URLEncoder.encode((String) entry.getValue(), this.defaultCharset)).append('&');
-                }
+                sbUrl.append(URLEncoder.encode(entry.getKey(), this.defaultCharset)).append('=').append(URLEncoder.encode((String) entry.getValue(), this.defaultCharset)).append('&');
             }
-
 
             sbUrl.delete(sbUrl.length() - 1, sbUrl.length());
             url = sbUrl.toString();
