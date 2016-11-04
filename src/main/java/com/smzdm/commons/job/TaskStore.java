@@ -5,8 +5,8 @@ import java.util.List;
 /**
  * Created by zhengwenzhu on 16/10/9.
  */
-public interface TaskStore {
-    void store(Task task);
+public interface TaskStore<T> {
+    void store(T task);
 
-    List<Task> load();
+    List<T> load();
 }

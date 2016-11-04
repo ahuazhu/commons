@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by zhengwenzhu on 16/10/10.
  */
-public class FixTimeScheduler {
+public class FixTimeScheduler <T extends Task> {
     public static final int ONE_SECOND = 1000;
     public static final int MILLIS_OF_ONE_SECOND = 1000;
 
@@ -17,8 +17,8 @@ public class FixTimeScheduler {
 
     private long nextScheduleTimestamp;
 
-    private TaskStore taskStore;
-    private TaskParser taskParser;
+    private TaskStore<T> taskStore;
+    private TaskParser<T> taskParser;
     private volatile boolean shutdown = false;
 
 
@@ -33,9 +33,9 @@ public class FixTimeScheduler {
                 while (!shutdown) {
                     if (System.currentTimeMillis() > nextScheduleTimestamp) {
                         nextScheduleTimestamp = nextTime();
-                        List<Task> tasks = taskStore.load();
-                        for (Task task : tasks) {
-                            taskExecutor.execute(new TaskContext(task, taskStore, taskParser));
+                        List<T> tasks = taskStore.load();
+                        for (T task : tasks) {
+                            taskExecutor.execute(new TaskContext<T>(task, taskStore, taskParser));
                         }
                     } else {
                         try {
@@ -75,11 +75,11 @@ public class FixTimeScheduler {
         this.jobName = jobName;
     }
 
-    public void setTaskStore(TaskStore taskStore) {
+    public void setTaskStore(TaskStore<T> taskStore) {
         this.taskStore = taskStore;
     }
 
-    public void setTaskParser(TaskParser taskParser) {
+    public void setTaskParser(TaskParser<T> taskParser) {
         this.taskParser = taskParser;
     }
 }

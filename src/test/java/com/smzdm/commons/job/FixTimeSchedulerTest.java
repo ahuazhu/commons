@@ -1,7 +1,5 @@
 package com.smzdm.commons.job;
 
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,23 +12,11 @@ import java.util.Map;
 public class FixTimeSchedulerTest {
 
 
-    static class PrintTaskStore implements TaskStore {
+    static class PrintTaskStore implements TaskStore<DefaultTask> {
 
-        private Map<Integer, Task> tasks = new HashMap<Integer, Task>();
+        private Map<Integer, DefaultTask> tasks = new HashMap<Integer, DefaultTask>();
 
         public PrintTaskStore() {
-//            private int taskId;
-//            private String taskName;
-//            private String handler;
-//            private String argument;
-//            private String taskType;
-//            private String status;
-//            private long nextTime;
-//            private int retriedTimes;
-//            private int maxRetryTimes;
-//            private String message;
-//            private long lastTime;
-//            private long maxInterval;
             DefaultTask task1 = new DefaultTask();
             task1.setTaskId(1);
             task1.setTaskName("task1");
@@ -44,38 +30,35 @@ public class FixTimeSchedulerTest {
         }
 
         @Override
-        public void store(Task task) {
+        public void store(DefaultTask task) {
             tasks.put(task.getTaskId(), task);
         }
 
+
         @Override
-        public List<Task> load() {
-            return new ArrayList<Task>(tasks.values());
+        public List<DefaultTask> load() {
+            return new ArrayList<DefaultTask>(tasks.values());
         }
     }
 
-    static class PrintTaskParser implements TaskParser {
+    static class PrintTaskParser implements TaskParser<DefaultTask> {
 
         @Override
-        public Runnable parse(final Task task) {
+        public Runnable parse(final DefaultTask task) {
 
             return new Runnable() {
                 @Override
                 public void run() {
-                    if (task instanceof DefaultTask) {
-                        DefaultTask t = (DefaultTask) task;
-                        if ("System.out.println".equals(t.getHandler())) {
-                            t.setMessage(t.getArgument());
-                            System.out.println(t.getArgument());
-                        }
+                    if ("System.out.println".equals(task.getHandler())) {
+                        task.setMessage(task.getArgument());
+                        System.out.println(task.getArgument());
                     }
-
                 }
+
             };
         }
     }
 
-    @Test
     public void testFixTime() throws IOException {
         FixTimeScheduler scheduler = new FixTimeScheduler();
         scheduler.setJobName("Cycle print");
@@ -84,16 +67,6 @@ public class FixTimeSchedulerTest {
         scheduler.setIntervalInSecond(1);
 
         scheduler.start();
-//        //
-//            private String jobName = "FixedTimeScheduler";
-//        private TaskExecutor taskExecutor = new DefaultTaskExecutor();
-//        private int intervalInMinutes;
-//        private long nextScheduleTimestamp;
-//        private TaskStore taskStore;
-//        private TaskParser taskParser;
-//        private volatile boolean shutdown = false;
-
-
         System.in.read();
 
         scheduler.shutdown();
